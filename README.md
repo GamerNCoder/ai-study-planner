@@ -19,6 +19,8 @@ npm install
 npm run dev
 ```
 
+Deploy over **HTTPS** so “Add to Home Screen” (PWA) works. Core scheduling logic is in **`src/lib/planner.ts`** (no DOM) for a future **React Native / Expo** app — see **`MOBILE.md`**.
+
 ## Next steps (good for essays)
 
 - Export `.ics` for Google Calendar.

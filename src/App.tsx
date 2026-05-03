@@ -1,63 +1,11 @@
+import type { CSSProperties } from 'react'
 import { useMemo, useState } from 'react'
+import { DAYS, aiCoachTip, buildPlan, type Task, uid } from './lib/planner'
 
-type Task = {
-  id: string
-  title: string
-  subject: string
-  minutes: number
-  dueDay: number
-}
-
-type Block = {
-  day: string
-  start: string
-  task: string
-  minutes: number
-}
-
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-
-function uid() {
-  return Math.random().toString(36).slice(2, 10)
-}
-
-/** Greedy weekly plan: sort by due day, pack 90-min study sessions per weekday afternoon. */
-function buildPlan(tasks: Task[]): Block[] {
-  const sorted = [...tasks].sort((a, b) => a.dueDay - b.dueDay || b.minutes - a.minutes)
-  const blocks: Block[] = []
-  let dayIdx = 0
-  let slot = 16
-  for (const t of sorted) {
-    let remaining = t.minutes
-    while (remaining > 0 && dayIdx < 5) {
-      const chunk = Math.min(90, remaining)
-      const h = Math.floor(slot)
-      const m = (slot % 1) * 60
-      blocks.push({
-        day: DAYS[dayIdx],
-        start: `${h.toString().padStart(2, '0')}:${m === 0 ? '00' : '30'}`,
-        task: `${t.subject}: ${t.title}`,
-        minutes: chunk,
-      })
-      remaining -= chunk
-      slot += chunk / 60
-      if (slot >= 21) {
-        slot = 16
-        dayIdx += 1
-      }
-    }
-  }
-  return blocks
-}
-
-function aiCoachTip(tasks: Task[]): string {
-  const total = tasks.reduce((s, t) => s + t.minutes, 0)
-  if (total === 0) return 'Add tasks to get scheduling tips.'
-  if (total > 900)
-    return 'Heavy week: prioritize deadlines, use 50/10 breaks, and sleep ≥7h — consistency beats cramming.'
-  if (tasks.some((t) => t.minutes > 180))
-    return 'Large tasks detected: split into 45–60m blocks with a clear “definition of done” each session.'
-  return 'Balanced load: alternate subjects, review yesterday’s notes for 10m before new material.'
+const grid: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
+  gap: '1rem',
 }
 
 export default function App() {
@@ -80,12 +28,11 @@ export default function App() {
   }
 
   return (
-    <div style={{ maxWidth: 920, margin: '0 auto', padding: '1.5rem' }}>
+    <div style={{ width: '100%', maxWidth: 920, margin: '0 auto', padding: 'clamp(0.75rem, 3vw, 1.5rem)' }}>
       <header style={{ marginBottom: '1.5rem' }}>
-        <h1 style={{ margin: 0, fontSize: '1.75rem' }}>AI Study Planner</h1>
-        <p style={{ color: '#94a3b8', marginTop: '0.35rem' }}>
-          Rule-based weekly blocks + study coach tips (no API keys). Optional: extend with your own LLM
-          endpoint later.
+        <h1 style={{ margin: 0, fontSize: 'clamp(1.35rem, 4vw, 1.75rem)' }}>AI Study Planner</h1>
+        <p style={{ color: '#94a3b8', marginTop: '0.35rem', lineHeight: 1.5 }}>
+          Rule-based weekly blocks + study coach tips (no API keys). Responsive web; see <code>MOBILE.md</code> for Expo.
         </p>
       </header>
 
@@ -102,7 +49,7 @@ export default function App() {
         <p style={{ margin: 0, color: '#cbd5e1' }}>{tip}</p>
       </section>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', flexWrap: 'wrap' }}>
+      <div style={grid}>
         <section
           style={{
             background: '#111827',
@@ -117,7 +64,7 @@ export default function App() {
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0' }}
+              style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 16 }}
             />
           </label>
           <label style={{ display: 'block', marginBottom: 8 }}>
@@ -125,7 +72,7 @@ export default function App() {
             <input
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0' }}
+              style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 16 }}
             />
           </label>
           <label style={{ display: 'block', marginBottom: 8 }}>
@@ -135,7 +82,7 @@ export default function App() {
               min={15}
               value={minutes}
               onChange={(e) => setMinutes(Number(e.target.value))}
-              style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0' }}
+              style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 16 }}
             />
           </label>
           <label style={{ display: 'block', marginBottom: 12 }}>
@@ -146,20 +93,22 @@ export default function App() {
               max={6}
               value={dueDay}
               onChange={(e) => setDueDay(Number(e.target.value))}
-              style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0' }}
+              style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 16 }}
             />
           </label>
           <button
             type="button"
             onClick={addTask}
             style={{
-              padding: '10px 16px',
+              padding: '12px 18px',
+              minHeight: 44,
               borderRadius: 8,
               border: 'none',
               background: '#2563eb',
               color: '#fff',
               fontWeight: 600,
               cursor: 'pointer',
+              fontSize: 16,
             }}
           >
             Add task
@@ -171,7 +120,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setTasks((x) => x.filter((y) => y.id !== t.id))}
-                  style={{ background: 'transparent', border: 'none', color: '#f87171', cursor: 'pointer' }}
+                  style={{ background: 'transparent', border: 'none', color: '#f87171', cursor: 'pointer', minHeight: 44, padding: '4px 8px' }}
                 >
                   remove
                 </button>
