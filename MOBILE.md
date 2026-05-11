@@ -11,4 +11,4 @@ This app is a **Vite + React** PWA-friendly SPA. Core scheduling lives in **`src
 
 ## PWA
 
-Install prompt: Chrome/Safari “Add to Home Screen” after HTTPS deploy. Local dev: `npm run dev` (no SW in this skeleton).
+**vite-plugin-pwa** registers a service worker in dev (`devOptions.enabled`) and production: precached JS/CSS/HTML plus `manifest.webmanifest`, with **auto-update** when you ship a new build. Install: Chrome / Safari “Add to Home Screen” on HTTPS. Offline: app shell loads from cache; fresh data still needs network where applicable.

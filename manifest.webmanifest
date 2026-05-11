@@ -2,11 +2,25 @@
   "name": "AI Study Planner",
   "short_name": "StudyPlan",
   "description": "Weekly study blocks and coach tips — PWA-ready; extend with Expo using the same scheduling logic.",
+  "id": "/",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "lang": "en",
+  "dir": "ltr",
   "background_color": "#0c1222",
   "theme_color": "#0c1222",
+  "categories": ["education", "productivity"],
   "icons": [
     { "src": "/vite.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Open planner",
+      "short_name": "Planner",
+      "description": "Jump into your study schedule",
+      "url": "/",
+      "icons": [{ "src": "/vite.svg", "sizes": "any", "type": "image/svg+xml" }]
+    }
   ]
 }
